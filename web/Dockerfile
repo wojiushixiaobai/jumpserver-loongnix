@@ -1,7 +1,8 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 WORKDIR /opt
 ARG VERSION=v2.22.1
-ENV VERSION=${VERSION}
+ENV VERSION=${VERSION} \
+    LANG="en_US.UTF-8"
 
 ARG DEPENDENCIES="                    \
     ca-certificates                   \
@@ -10,6 +11,7 @@ ARG DEPENDENCIES="                    \
     wget"
 
 RUN set -ex \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && apt-get update \
     && apt-get install -y --no-install-recommends $DEPENDENCIES \
     && wget https://github.com/jumpserver/luna/releases/download/${VERSION}/luna-${VERSION}.tar.gz \

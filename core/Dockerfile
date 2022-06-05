@@ -1,6 +1,7 @@
 FROM jumpserver/python:3.8-loongnix
 ARG VERSION=v2.22.1
-ENV VERSION=${VERSION}
+ENV VERSION=${VERSION} \
+    LANG="en_US.UTF-8"
 
 WORKDIR /opt
 
@@ -38,6 +39,7 @@ ARG TOOLS="                           \
     wget"
 
 RUN set -ex \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && apt-get update \
     && apt-get -y install --no-install-recommends ${BUILD_DEPENDENCIES} \
     && apt-get -y install --no-install-recommends ${DEPENDENCIES} \

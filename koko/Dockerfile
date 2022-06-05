@@ -8,7 +8,6 @@ ENV VERSION=${VERSION} \
     GOOS=linux
 
 RUN set -ex \
-    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && yum -y install loongnix-release-epel \
     && cp /etc/yum.repos.d/Loongnix-Plus.repo /etc/yum.repos.d/Loongnix-Cloud.repo \
     && sed -i 's@/loongnixplus/$basearch/release/@/cloud/$basearch/release/kubernetes/@g' /etc/yum.repos.d/Loongnix-Cloud.repo \
@@ -55,6 +54,7 @@ FROM cr.loongnix.cn/loongson/loongnix:20 as build_redis
 WORKDIR /opt
 
 RUN set -ex \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates wget make gcc g++ pkg-config \
     && wget https://download.redis.io/redis-stable.tar.gz \
@@ -71,7 +71,8 @@ RUN set -ex \
 FROM cr.loongnix.cn/loongson/loongnix:20
 WORKDIR /opt/
 ARG VERSION=v2.22.1
-ENV VERSION=${VERSION}
+ENV VERSION=${VERSION} \
+    LANG="en_US.UTF-8"
 
 ARG DEPENDENCIES="                    \
     bash-completion                   \
