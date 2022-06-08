@@ -1,5 +1,5 @@
 FROM jumpserver/python:3.8-loongnix
-ARG VERSION=v2.22.1
+ARG VERSION=v2.22.2
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 

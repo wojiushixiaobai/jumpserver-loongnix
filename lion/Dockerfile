@@ -1,7 +1,7 @@
 FROM jumpserver/guacd:1.4.0
 WORKDIR /opt/
 ARG TARGETARCH \
-    VERSION=v2.22.1
+    VERSION=v2.22.2
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 

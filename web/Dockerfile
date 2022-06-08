@@ -1,6 +1,6 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 WORKDIR /opt
-ARG VERSION=v2.22.1
+ARG VERSION=v2.22.2
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
