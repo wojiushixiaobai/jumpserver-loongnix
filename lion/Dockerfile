@@ -1,9 +1,10 @@
 FROM jumpserver/guacd:1.4.0
-WORKDIR /opt/
 ARG TARGETARCH \
     VERSION=v2.22.2
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
+
+WORKDIR /opt/
 
 ARG DEPENDENCIES="                    \
         ca-certificates               \
@@ -15,6 +16,7 @@ RUN set -ex \
     && apt-get update \
     && apt-get install -y --no-install-recommends $DEPENDENCIES \
     && echo "no" | dpkg-reconfigure dash \
+    && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -ex \
@@ -26,5 +28,7 @@ RUN set -ex \
 
 COPY lion/entrypoint.sh .
 RUN chmod 755 ./entrypoint.sh
+
+EXPOSE 8081
 
 CMD ["./entrypoint.sh"]

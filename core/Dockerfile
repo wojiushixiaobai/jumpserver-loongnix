@@ -1,42 +1,43 @@
 FROM jumpserver/python:3.8-loongnix
-ARG VERSION=v2.22.2
+ARG TARGETARCH \
+    VERSION=v2.22.2
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
 WORKDIR /opt
 
 ARG BUILD_DEPENDENCIES="              \
-    g++                               \
-    make                              \
-    pkg-config"
+        g++                           \
+        make                          \
+        pkg-config"
 
 ARG DEPENDENCIES="                    \
-    default-libmysqlclient-dev        \
-    freetds-dev                       \
-    libpq-dev                         \
-    libffi-dev                        \
-    libjpeg62-turbo-dev               \
-    libldap2-dev                      \
-    libsasl2-dev                      \
-    libxml2-dev                       \
-    libxmlsec1-dev                    \
-    libxmlsec1-openssl                \
-    libaio-dev                        \
-    sshpass"
+        default-libmysqlclient-dev    \
+        freetds-dev                   \
+        libpq-dev                     \
+        libffi-dev                    \
+        libjpeg62-turbo-dev           \
+        libldap2-dev                  \
+        libsasl2-dev                  \
+        libxml2-dev                   \
+        libxmlsec1-dev                \
+        libxmlsec1-openssl            \
+        libaio-dev                    \
+        sshpass"
 
 ARG TOOLS="                           \
-    ca-certificates                   \
-    curl                              \
-    default-mysql-client              \
-    gettext                           \
-    iproute2                          \
-    iputils-ping                      \
-    locales                           \
-    redis-server                      \
-    procps                            \
-    telnet                            \
-    vim                               \
-    wget"
+        ca-certificates               \
+        curl                          \
+        default-mysql-client          \
+        gettext                       \
+        iproute2                      \
+        iputils-ping                  \
+        locales                       \
+        redis-server                  \
+        procps                        \
+        telnet                        \
+        vim                           \
+        wget"
 
 RUN set -ex \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
@@ -44,10 +45,12 @@ RUN set -ex \
     && apt-get -y install --no-install-recommends ${BUILD_DEPENDENCIES} \
     && apt-get -y install --no-install-recommends ${DEPENDENCIES} \
     && apt-get -y install --no-install-recommends ${TOOLS} \
+    && echo "no" | dpkg-reconfigure dash \
     && mkdir -p /root/.ssh/ \
     && echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null" > /root/.ssh/config \
     && sed -i "s@# alias l@alias l@g" ~/.bashrc \
     && echo "set mouse-=a" > ~/.vimrc \
+    && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -ex \
@@ -61,13 +64,13 @@ RUN set -ex \
     && rm -f /opt/*.tar.gz
 
 RUN set -ex \
-    && pip install https://download.jumpserver.org/pypi/simple/cryptography/cryptography-36.0.1-cp38-cp38-linux_loongarch64.whl \
-    && pip install https://download.jumpserver.org/pypi/simple/greenlet/greenlet-0.4.14-cp38-cp38-linux_loongarch64.whl \
-    && pip install $(grep 'PyNaCl' /opt/jumpserver/requirements/requirements.txt) \
-    && pip install $(grep 'pandas' /opt/jumpserver/requirements/requirements.txt) \
-    && pip install $(grep 'numpy' /opt/jumpserver/requirements/requirements.txt) \
-    && GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true pip install grpcio \
-    && pip install -r /opt/jumpserver/requirements/requirements.txt \
+    && pip install https://download.jumpserver.org/pypi/simple/cryptography/cryptography-36.0.1-cp38-cp38-linux_loongarch64.whl -i https://pypi.douban.com/simple \
+    && pip install https://download.jumpserver.org/pypi/simple/greenlet/greenlet-0.4.14-cp38-cp38-linux_loongarch64.whl -i https://pypi.douban.com/simple \
+    && pip install $(grep 'PyNaCl' /opt/jumpserver/requirements/requirements.txt) -i https://pypi.douban.com/simple \
+    && pip install $(grep 'pandas' /opt/jumpserver/requirements/requirements.txt) -i https://pypi.douban.com/simple \
+    && pip install $(grep 'numpy' /opt/jumpserver/requirements/requirements.txt) -i https://pypi.douban.com/simple \
+    && GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true pip install grpcio -i https://pypi.douban.com/simple \
+    && pip install -r /opt/jumpserver/requirements/requirements.txt -i https://pypi.douban.com/simple \
     && cd /opt/jumpserver/apps \
     && sed -i "s@daemonize no@daemonize yes@g" /etc/redis/redis.conf \
     && sed -i "598i maxmemory-policy allkeys-lru" /etc/redis/redis.conf \

@@ -4,3 +4,6 @@
 .history/
 .vscode/
 /core/pypi
+omnidb/
+xrdp/
+razor/

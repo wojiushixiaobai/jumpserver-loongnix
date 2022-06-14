@@ -1,10 +1,11 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
-WORKDIR /opt/
 ARG TARGETARCH \
     VERSION=v2.22.2 \
     WISP_VERSION=v0.0.7
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
+
+WORKDIR /opt/
 
 ARG DEPENDENCIES="                    \
         ca-certificates               \
@@ -16,6 +17,7 @@ RUN set -ex \
     && apt-get update \
     && apt-get install -y --no-install-recommends $DEPENDENCIES \
     && echo "no" | dpkg-reconfigure dash \
+    && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -ex \
@@ -33,5 +35,7 @@ RUN set -ex \
 
 COPY magnus/entrypoint.sh .
 RUN chmod 755 ./entrypoint.sh
+
+EXPOSE 33060 33061
 
 CMD ["./entrypoint.sh"]
