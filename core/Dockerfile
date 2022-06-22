@@ -1,6 +1,6 @@
 FROM jumpserver/python:3.8-loongnix
 ARG TARGETARCH \
-    VERSION=v2.22.2
+    VERSION=v2.22.3
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -23,6 +23,7 @@ ARG DEPENDENCIES="                    \
         libxmlsec1-dev                \
         libxmlsec1-openssl            \
         libaio-dev                    \
+        openssh-client                \
         sshpass"
 
 ARG TOOLS="                           \

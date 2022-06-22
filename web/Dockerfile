@@ -1,7 +1,7 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 WORKDIR /opt
 ARG TARGETARCH \
-    VERSION=v2.22.2
+    VERSION=v2.22.3
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -26,6 +26,19 @@ RUN set -ex \
     && rm -f /opt/*.tar.gz \
     && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*
+
+ARG Jmservisor_VERSION=v1.2.3 \
+    Client_VERSION=v1.1.5 \
+    MRD_VERSION=10.6.7
+
+RUN set -ex \
+    && mkdir -p /opt/download \
+    && cd /opt/download \
+    && wget -q https://download.jumpserver.org/public/Microsoft_Remote_Desktop_${MRD_VERSION}_installer.pkg \
+    && wget -qO /opt/download/Jmservisor.msi https://download.jumpserver.org/public/Jmservisor-${Jmservisor_VERSION}.msi \
+    && wget -qO /opt/download/JumpServer-Client-Installer-x86_64.msi https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-x86_64.msi \
+    && wget -qO /opt/download/JumpServer-Client-Installer-arm64.msi https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-arm64.msi \
+    && wget -qO /opt/download/JumpServer-Client-Installer.dmg https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}.dmg
 
 COPY web/jumpserver.conf /etc/nginx/conf.d/
 

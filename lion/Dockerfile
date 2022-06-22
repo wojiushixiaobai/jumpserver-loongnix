@@ -1,6 +1,6 @@
 FROM jumpserver/guacd:1.4.0
 ARG TARGETARCH \
-    VERSION=v2.22.2
+    VERSION=v2.22.3
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 

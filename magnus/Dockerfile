@@ -1,7 +1,6 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 ARG TARGETARCH \
-    VERSION=v2.22.2 \
-    WISP_VERSION=v0.0.7
+    VERSION=v2.22.3
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -19,6 +18,8 @@ RUN set -ex \
     && echo "no" | dpkg-reconfigure dash \
     && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*
+
+ARG WISP_VERSION=v0.0.7
 
 RUN set -ex \
     && wget https://github.com/jumpserver/wisp/releases/download/${WISP_VERSION}/wisp-${WISP_VERSION}-linux-${TARGETARCH}.tar.gz \

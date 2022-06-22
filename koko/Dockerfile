@@ -1,6 +1,6 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 ARG TARGETARCH \
-    VERSION=v2.22.2
+    VERSION=v2.22.3
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
