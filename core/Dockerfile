@@ -1,6 +1,6 @@
 FROM jumpserver/python:3.8-loongnix
 ARG TARGETARCH \
-    VERSION=v2.23.3
+    VERSION=v2.23.4
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
