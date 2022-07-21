@@ -1,6 +1,6 @@
 FROM jumpserver/python:3.8-loongnix
 ARG TARGETARCH \
-    VERSION=v2.23.4
+    VERSION=v2.24.0
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -66,10 +66,8 @@ RUN set -ex \
 
 RUN set -ex \
     && pip install https://download.jumpserver.org/pypi/simple/cryptography/cryptography-36.0.1-cp38-cp38-linux_loongarch64.whl -i https://pypi.douban.com/simple \
-    && pip install https://download.jumpserver.org/pypi/simple/greenlet/greenlet-0.4.14-cp38-cp38-linux_loongarch64.whl -i https://pypi.douban.com/simple \
+    && pip install https://download.jumpserver.org/pypi/simple/greenlet-1.1.2-cp38-cp38-linux_loongarch64.whl -i https://pypi.douban.com/simple \
     && pip install $(grep 'PyNaCl' /opt/jumpserver/requirements/requirements.txt) -i https://pypi.douban.com/simple \
-    && pip install $(grep 'pandas' /opt/jumpserver/requirements/requirements.txt) -i https://pypi.douban.com/simple \
-    && pip install $(grep 'numpy' /opt/jumpserver/requirements/requirements.txt) -i https://pypi.douban.com/simple \
     && GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true pip install grpcio -i https://pypi.douban.com/simple \
     && pip install -r /opt/jumpserver/requirements/requirements.txt -i https://pypi.douban.com/simple \
     && cd /opt/jumpserver/apps \

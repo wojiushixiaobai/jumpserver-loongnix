@@ -1,6 +1,6 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 ARG TARGETARCH \
-    VERSION=v2.23.4
+    VERSION=v2.24.0
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -19,7 +19,7 @@ RUN set -ex \
     && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*
 
-ARG WISP_VERSION=v0.0.7
+ARG WISP_VERSION=v0.0.8
 
 RUN set -ex \
     && wget https://github.com/jumpserver/wisp/releases/download/${WISP_VERSION}/wisp-${WISP_VERSION}-linux-${TARGETARCH}.tar.gz \

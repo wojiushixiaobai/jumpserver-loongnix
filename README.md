@@ -23,7 +23,7 @@ vi .env
 ```
 ```vim
 # 版本号可以自己根据项目的版本修改
-VERSION=v2.23.4
+VERSION=v2.24.0
 
 # Compose
 COMPOSE_PROJECT_NAME=jms
@@ -51,10 +51,6 @@ SECRET_KEY=B3f2w8P2PfxIAS7s4URrD9YmSbtqX4vXdPUL217kL9XPUOWrmy
 BOOTSTRAP_TOKEN=7Q11Vz6R2J6BLAdO
 DEBUG=FALSE
 LOG_LEVEL=ERROR
-
-# Web  # 对外端口定义
-HTTP_PORT=80
-SSH_PORT=2222
 
 ##
 # SECRET_KEY 保护签名数据的密匙, 首次安装请一定要修改并牢记, 后续升级和迁移不可更改, 否则将导致加密的数据不可解密。

@@ -1,7 +1,7 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 WORKDIR /opt
 ARG TARGETARCH \
-    VERSION=v2.23.4
+    VERSION=v2.24.0
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -29,7 +29,8 @@ RUN set -ex \
 
 ARG Jmservisor_VERSION=v1.2.3 \
     Client_VERSION=v1.1.6 \
-    MRD_VERSION=10.6.7
+    MRD_VERSION=10.6.7 \
+    VIDEO_PLAYER_VERSION=0.1.5
 
 RUN set -ex \
     && mkdir -p /opt/download \
@@ -39,7 +40,10 @@ RUN set -ex \
     && wget -qO /opt/download/JumpServer-Client-Installer-x86_64.msi https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-x86_64.msi \
     && wget -qO /opt/download/JumpServer-Client-Installer.dmg https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}.dmg \
     && wget -qO /opt/download/JumpServer-Client-Installer-amd64.run https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-amd64.run \
-    && wget -qO /opt/download/JumpServer-Client-Installer-arm64.run https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-arm64.run
+    && wget -qO /opt/download/JumpServer-Client-Installer-arm64.run https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-arm64.run \
+    && wget -qO /opt/download/JumpServer-Video-Player.dmg https://jms-pkg.oss-cn-beijing.aliyuncs.com/public/JumpServer.Video.Player-${VIDEO_PLAYER_VERSION}.dmg \
+    && wget -qO /opt/download/JumpServer-Video-Player.exe https://jms-pkg.oss-cn-beijing.aliyuncs.com/public/JumpServer.Video.Player.Setup.${VIDEO_PLAYER_VERSION}.exe \
+    && rm -rf /var/log/nginx/*.log
 
 COPY web/jumpserver.conf /etc/nginx/conf.d/
 
