@@ -1,7 +1,7 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 WORKDIR /opt
 ARG TARGETARCH \
-    VERSION=v2.24.0
+    VERSION=v2.24.1
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 

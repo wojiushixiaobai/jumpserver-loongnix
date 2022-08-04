@@ -1,6 +1,6 @@
 FROM jumpserver/python:3.8-loongnix
 ARG TARGETARCH \
-    VERSION=v2.24.0
+    VERSION=v2.24.1
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -75,13 +75,10 @@ RUN set -ex \
     && sed -i "598i maxmemory-policy allkeys-lru" /etc/redis/redis.conf \
     && redis-server /etc/redis/redis.conf \
     && echo "SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)" > /opt/jumpserver/config.yml \
-    && rm -f /opt/jumpserver/apps/locale/zh/LC_MESSAGES/django.mo \
+    && rm -f /opt/jumpserver/apps/locale/zh/LC_MESSAGES/django.mo /opt/jumpserver/apps/locale/zh/LC_MESSAGES/djangojs.mo \
     && python manage.py compilemessages \
     && rm -f /opt/jumpserver/config.yml \
     && cd /opt \
-    && mkdir -p /root/.ssh/ \
-    && echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null" > /root/.ssh/config \
-    && echo "no" | dpkg-reconfigure dash \
     && rm -f /opt/*.tar.gz \
     && rm -rf ~/.cache/pip
 
