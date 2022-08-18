@@ -1,13 +1,14 @@
 FROM cr.loongnix.cn/loongson/loongnix:20
 WORKDIR /opt
 ARG TARGETARCH \
-    VERSION=v2.24.1
+    VERSION=v2.25.0
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
 ARG DEPENDENCIES="                    \
         ca-certificates               \
         curl                          \
+        logrotate                     \
         nginx                         \
         wget"
 
@@ -33,7 +34,7 @@ ARG Jmservisor_VERSION=v1.2.3 \
     VIDEO_PLAYER_VERSION=0.1.5
 
 RUN set -ex \
-    && mkdir -p /opt/download \
+    && mkdir -p /opt/download /etc/nginx/sites-enabled \
     && cd /opt/download \
     && wget -q https://download.jumpserver.org/public/Microsoft_Remote_Desktop_${MRD_VERSION}_installer.pkg \
     && wget -qO /opt/download/Jmservisor.msi https://download.jumpserver.org/public/Jmservisor-${Jmservisor_VERSION}.msi \
@@ -41,12 +42,15 @@ RUN set -ex \
     && wget -qO /opt/download/JumpServer-Client-Installer.dmg https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}.dmg \
     && wget -qO /opt/download/JumpServer-Client-Installer-amd64.run https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-amd64.run \
     && wget -qO /opt/download/JumpServer-Client-Installer-arm64.run https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-arm64.run \
-    && wget -qO /opt/download/JumpServer-Video-Player.dmg https://jms-pkg.oss-cn-beijing.aliyuncs.com/public/JumpServer.Video.Player-${VIDEO_PLAYER_VERSION}.dmg \
-    && wget -qO /opt/download/JumpServer-Video-Player.exe https://jms-pkg.oss-cn-beijing.aliyuncs.com/public/JumpServer.Video.Player.Setup.${VIDEO_PLAYER_VERSION}.exe \
+    && wget -qO /opt/download/JumpServer-Video-Player.dmg https://download.jumpserver.org/public/JumpServer.Video.Player-${VIDEO_PLAYER_VERSION}.dmg \
+    && wget -qO /opt/download/JumpServer-Video-Player.exe https://download.jumpserver.org/public/JumpServer.Video.Player.Setup.${VIDEO_PLAYER_VERSION}.exe \
     && rm -rf /var/log/nginx/*.log
 
-COPY web/jumpserver.conf /etc/nginx/conf.d/
+COPY web/docker-entrypoint.sh /
+RUN chmod 755 /docker-entrypoint.sh
+
+COPY web/http_server.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/docker-entrypoint.sh"]
