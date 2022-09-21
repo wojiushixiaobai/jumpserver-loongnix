@@ -45,7 +45,7 @@ RUN set -ex \
     && tar -xf kubectl_aliases.tar.gz -C /opt/kubectl-aliases/ \
     && chown -R root:root /opt/kubectl-aliases/ \
     && chmod 755 /opt/koko/init-kubectl.sh \
-    && wget https://download.jumpserver.org/redis/stable/redis-cli-linux-${TARGETARCH}.tar.gz \
+    && wget https://download.jumpserver.org/redis/6.0.16/redis-cli-linux-${TARGETARCH}.tar.gz \
     && tar -xf redis-cli-linux-${TARGETARCH}.tar.gz -C /usr/local/bin \
     && chmod 755 /usr/local/bin/redis-cli \
     && rm -rf /opt/*.tar.gz
