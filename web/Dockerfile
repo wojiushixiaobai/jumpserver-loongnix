@@ -1,7 +1,7 @@
-FROM cr.loongnix.cn/loongson/loongnix:20
+FROM cr.loongnix.cn/loongson/loongnix:20-slim
 WORKDIR /opt
 ARG TARGETARCH \
-    VERSION=v2.26.0
+    VERSION=v2.26.1
 ENV VERSION=${VERSION} \
     LANG="en_US.UTF-8"
 
@@ -28,8 +28,8 @@ RUN set -ex \
     && apt-get clean all \
     && rm -rf /var/lib/apt/lists/*
 
-ARG Jmservisor_VERSION=v1.2.3 \
-    Client_VERSION=v1.1.6 \
+ARG Jmservisor_VERSION=v1.2.5 \
+    Client_VERSION=v1.1.7 \
     MRD_VERSION=10.6.7 \
     VIDEO_PLAYER_VERSION=0.1.5
 
@@ -44,6 +44,8 @@ RUN set -ex \
     && wget -qO /opt/download/JumpServer-Client-Installer-arm64.run https://download.jumpserver.org/public/JumpServer-Client-Installer-${Client_VERSION}-arm64.run \
     && wget -qO /opt/download/JumpServer-Video-Player.dmg https://download.jumpserver.org/public/JumpServer.Video.Player-${VIDEO_PLAYER_VERSION}.dmg \
     && wget -qO /opt/download/JumpServer-Video-Player.exe https://download.jumpserver.org/public/JumpServer.Video.Player.Setup.${VIDEO_PLAYER_VERSION}.exe \
+    && wget -qO /opt/download/OpenSSH-Win64.msi https://download.jumpserver.org/public/OpenSSH-Win64.msi \
+    && rm -f /etc/cron.daily/apt-compat \
     && rm -rf /var/log/nginx/*.log
 
 COPY web/docker-entrypoint.sh /
