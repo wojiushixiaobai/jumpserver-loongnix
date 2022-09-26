@@ -9,6 +9,7 @@ WORKDIR /opt/
 ARG DEPENDENCIES="                    \
         ca-certificates               \
         curl                          \
+        procps                        \
         wget"
 
 RUN set -ex \
