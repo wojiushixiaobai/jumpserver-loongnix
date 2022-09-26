@@ -34,6 +34,7 @@ ARG TOOLS="                           \
         iproute2                      \
         iputils-ping                  \
         locales                       \
+        netcat                        \
         redis-server                  \
         procps                        \
         telnet                        \
