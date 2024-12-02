@@ -1,64 +1,38 @@
 #!/bin/bash
 #
 
-while ! nc -z $DB_HOST $DB_PORT;
-do
-    echo "wait for jms_mysql ${DB_HOST} ready"
-    sleep 2s
-done
-
-if [ $REDIS_HOST == "127.0.0.1" ]; then
-    if [[ "$(uname -m)" == "aarch64" ]]; then
-        sed -i "s/# ignore-warnings ARM64-COW-BUG/ignore-warnings ARM64-COW-BUG/g" /etc/redis/redis.conf
+function cleanup() {
+    local pids
+    pids=$(jobs -p)
+    if [ -n "$pids" ]; then
+        kill "$pids" >/dev/null 2>&1
     fi
-    sed -i "s@# requirepass .*@requirepass $REDIS_PASSWORD@g" /etc/redis/redis.conf
-    redis-server /etc/redis/redis.conf
+}
+
+if [ -n "${DB_HOST}" ] && [ -n "${DB_PORT}" ]; then
+    until check tcp://${DB_HOST}:${DB_PORT}; do
+        echo "wait for jms_mysql ${DB_HOST} ready"
+        sleep 2s
+    done
 fi
 
-while ! nc -z $REDIS_HOST $REDIS_PORT;
-do
-    echo "wait for jms_redis ${REDIS_HOST} ready"
-    sleep 2s
-done
-
-if [ ! -f "/opt/jumpserver/config.yml" ]; then
-    echo > /opt/jumpserver/config.yml
+if [ -n "${REDIS_HOST}" ] && [ -n "${REDIS_PORT}" ]; then
+    until check tcp://${REDIS_HOST}:${REDIS_PORT}; do
+        echo "wait for jms_redis ${REDIS_HOST} ready"
+        sleep 2s
+    done
 fi
 
-if [ ! "$LOG_LEVEL" ]; then
-    export LOG_LEVEL=ERROR
-fi
+trap cleanup EXIT
+rm -f /opt/jumpserver/tmp/*.pid
 
-action="${1-start}"
-if [ ! "${action}" ]; then
-  action=start
-fi
+case "$1" in
+    start|init_db|upgrade_db)
+        set -- /opt/jumpserver/jms "$@"
+        ;;
+    *)
+        exec "$@"
+        ;;
+esac
 
-service="${2-all}"
-if [ ! "${service}" ]; then
-  service=all
-fi
-
-if [ ! -d "/opt/jumpserver/data/static" ]; then
-    mkdir -p /opt/jumpserver/data/static
-    chmod 755 -R /opt/jumpserver/data/static
-fi
-
-if [ ! -f "/opt/jumpserver/config.yml" ]; then
-    echo > /opt/jumpserver/config.yml
-fi
-
-if [ ! $LOG_LEVEL ]; then
-    export LOG_LEVEL=ERROR
-fi
-
-if [[ "$action" == "bash" || "$action" == "sh" ]];then
-    bash
-elif [[ "$action" == "sleep" ]];then
-    echo "Sleep 7 days"
-    sleep 7d
-else
-    cd /opt/jumpserver
-    rm -f /opt/jumpserver/tmp/*.pid
-    ./jms "${action}" "${service}"
-fi
+exec "$@"

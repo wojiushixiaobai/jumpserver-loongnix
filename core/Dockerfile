@@ -1,10 +1,43 @@
-FROM jumpserver/python:3.8-slim
-ARG TARGETARCH \
-    VERSION=v2.26.1
-ENV VERSION=${VERSION} \
-    LANG="en_US.UTF-8"
+FROM cr.loongnix.cn/library/python:3.11-slim-buster AS stage-1
+ARG TARGETARCH
+
+ARG DEPENDENCIES="                    \
+        ca-certificates               \
+        wget"
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -e \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
+    && apt-get update \
+    && apt-get -y install --no-install-recommends ${DEPENDENCIES}
 
 WORKDIR /opt
+
+ARG CHECK_VERSION=v1.0.3
+RUN set -e \
+    && wget --quiet https://github.com/wojiushixiaobai/healthcheck-loongarch64/releases/download/${CHECK_VERSION}/check-${CHECK_VERSION}-linux-${TARGETARCH}.tar.gz \
+    && tar -xf check-${CHECK_VERSION}-linux-${TARGETARCH}.tar.gz -C /usr/local/bin/ check \
+    && chown root:root /usr/local/bin/check \
+    && chmod 755 /usr/local/bin/check \
+    && rm -f /opt/*.tar.gz
+
+ARG VERSION
+
+RUN set -e \
+    && mkdir -p /opt/jumpserver \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/core-${VERSION}.tar.gz \
+    && tar -xf /opt/core-${VERSION}.tar.gz -C /opt/jumpserver --strip-components=1 \
+    && chown -R root:root /opt/jumpserver \
+    && echo > /opt/jumpserver/config.yml \
+    && sed -i 's@# xmlsec =@xmlsec =@g' /opt/jumpserver/pyproject.toml \
+    && rm -f /opt/*.tar.gz
+
+COPY core/entrypoint.sh /opt/jumpserver/entrypoint.sh
+
+FROM cr.loongnix.cn/library/python:3.11-slim-buster AS stage-2
+ARG TARGETARCH
 
 ARG BUILD_DEPENDENCIES="              \
         g++                           \
@@ -12,82 +45,112 @@ ARG BUILD_DEPENDENCIES="              \
         pkg-config"
 
 ARG DEPENDENCIES="                    \
-        default-libmysqlclient-dev    \
         freetds-dev                   \
-        libpq-dev                     \
         libffi-dev                    \
-        libjpeg62-turbo-dev           \
+        libjpeg-dev                   \
+        libkrb5-dev                   \
         libldap2-dev                  \
+        libpq-dev                     \
         libsasl2-dev                  \
+        libssl-dev                    \
         libxml2-dev                   \
         libxmlsec1-dev                \
         libxmlsec1-openssl            \
-        libaio-dev                    \
-        openssh-client                \
-        sshpass"
+        freerdp2-dev                  \
+        libaio-dev"
 
 ARG TOOLS="                           \
         ca-certificates               \
         curl                          \
+        default-libmysqlclient-dev    \
         default-mysql-client          \
-        gettext                       \
-        iproute2                      \
-        iputils-ping                  \
-        locales                       \
-        netcat                        \
-        redis-server                  \
-        procps                        \
-        telnet                        \
-        vim                           \
+        git                           \
+        unzip                         \
+        xz-utils                      \
         wget"
 
-RUN set -ex \
-    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -e \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && apt-get update \
     && apt-get -y install --no-install-recommends ${BUILD_DEPENDENCIES} \
     && apt-get -y install --no-install-recommends ${DEPENDENCIES} \
-    && apt-get -y install --no-install-recommends ${TOOLS} \
-    && echo "no" | dpkg-reconfigure dash \
-    && mkdir -p /root/.ssh/ \
-    && echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null" > /root/.ssh/config \
-    && sed -i "s@# alias l@alias l@g" ~/.bashrc \
-    && echo "set mouse-=a" > ~/.vimrc \
-    && apt-get clean all \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get -y install --no-install-recommends ${TOOLS}
 
-RUN set -ex \
-    && wget https://github.com/jumpserver/jumpserver/releases/download/${VERSION}/jumpserver-${VERSION}.tar.gz \
-    && tar -xf jumpserver-${VERSION}.tar.gz \
-    && mv jumpserver-${VERSION} jumpserver \
-    && rm -f /opt/jumpserver/apps/common/utils/ip/geoip/GeoLite2-City.mmdb /opt/jumpserver/apps/common/utils/ip/ipip/ipipfree.ipdb \
-    && wget https://download.jumpserver.org/files/ip/GeoLite2-City.mmdb -O /opt/jumpserver/apps/common/utils/ip/geoip/GeoLite2-City.mmdb \
-    && wget https://download.jumpserver.org/files/ip/ipipfree.ipdb -O /opt/jumpserver/apps/common/utils/ip/ipip/ipipfree.ipdb \
-    && chown -R root:root jumpserver \
-    && rm -f /opt/*.tar.gz
+WORKDIR /opt
 
-RUN set -ex \
-    && pip install https://download.jumpserver.org/pypi/simple/cryptography/cryptography-36.0.1-cp38-cp38-linux_loongarch64.whl -i https://pypi.douban.com/simple \
-    && pip install https://download.jumpserver.org/pypi/simple/greenlet/greenlet-1.1.2-cp38-cp38-linux_loongarch64.whl -i https://pypi.douban.com/simple \
-    && pip install $(grep 'PyNaCl' /opt/jumpserver/requirements/requirements.txt) -i https://pypi.douban.com/simple \
-    && GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=true pip install grpcio -i https://pypi.douban.com/simple \
-    && pip install -r /opt/jumpserver/requirements/requirements.txt -i https://pypi.douban.com/simple \
-    && cd /opt/jumpserver/apps \
-    && sed -i "s@daemonize no@daemonize yes@g" /etc/redis/redis.conf \
-    && sed -i "598i maxmemory-policy allkeys-lru" /etc/redis/redis.conf \
-    && redis-server /etc/redis/redis.conf \
-    && echo "SECRET_KEY: $(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 49)" > /opt/jumpserver/config.yml \
-    && rm -f /opt/jumpserver/apps/locale/zh/LC_MESSAGES/django.mo /opt/jumpserver/apps/locale/zh/LC_MESSAGES/djangojs.mo \
-    && python manage.py compilemessages \
-    && rm -f /opt/jumpserver/config.yml \
+RUN set -e \
+    && mkdir -p /opt/rust-install \
+    && wget -qO /opt/rust.tar.xz "https://rust-lang.loongnix.cn/dist/1.82.0/2024-10-23/rust-1.82.0-loongarch64-unknown-linux-gnu.tar.xz" \
+    && tar -xf /opt/rust.tar.xz -C /opt/rust-install --strip-components=1 \
+    && cd /opt/rust-install && ./install.sh \
     && cd /opt \
-    && rm -f /opt/*.tar.gz \
-    && rm -rf ~/.cache/pip
+    && rm -rf /opt/rust.tar.xz /opt/rust-install \
+    && mkdir -p ${CARGO_HOME:-$HOME/.cargo} \
+    && echo '[source.crates-io]\nreplace-with = "ustc"\n\n[source.ustc]\nregistry = "sparse+https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/"' > ${CARGO_HOME:-$HOME/.cargo}/config.toml
+
+ARG CRYPTOGRAPHY_VERSION=41.0.7
+ENV GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1
 
 WORKDIR /opt/jumpserver
 
-COPY core/entrypoint.sh .
-RUN chmod 755 ./entrypoint.sh
+RUN --mount=type=cache,target=/root/.cache \
+    --mount=type=bind,from=stage-1,source=/opt/jumpserver/pyproject.toml,target=pyproject.toml \
+    set -e \
+    && pip install poetry cryptography==${CRYPTOGRAPHY_VERSION} \
+    && python3 -m venv /opt/py3 \
+    && . /opt/py3/bin/activate \
+    && poetry install --with sources
 
-EXPOSE 8070 8080
+FROM cr.loongnix.cn/library/python:3.11-slim-buster
+ENV LANG=en_US.UTF-8 \
+    PATH=/opt/py3/bin:$PATH
 
-ENTRYPOINT ["./entrypoint.sh"]
+ARG DEPENDENCIES="                    \
+        freerdp2-dev                  \
+        libldap2-dev                  \
+        libpq-dev                     \
+        libx11-dev                    \
+        libxmlsec1-openssl"
+
+ARG TOOLS="                           \
+        bubblewrap                    \
+        ca-certificates               \
+        default-libmysqlclient-dev    \
+        default-mysql-client          \
+        openssh-client                \
+        sshpass"
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -e \
+    && rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && apt-get update \
+    && apt-get -y install --no-install-recommends ${DEPENDENCIES} \
+    && apt-get -y install --no-install-recommends ${TOOLS} \
+    && mkdir -p /root/.ssh/ \
+    && echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null\n\tCiphers +aes128-cbc\n\tKexAlgorithms +diffie-hellman-group1-sha1\n\tHostKeyAlgorithms +ssh-rsa" > /root/.ssh/config
+
+COPY --from=stage-1 /usr/local/bin /usr/local/bin
+COPY --from=stage-1 /opt/jumpserver /opt/jumpserver
+COPY --from=stage-1 /opt/jumpserver/apps/libs/ansible/ansible.cfg /etc/ansible/
+COPY --from=stage-2 /opt/py3 /opt/py3
+
+WORKDIR /opt/jumpserver
+
+ARG VERSION
+ENV VERSION=${VERSION}
+
+VOLUME /opt/jumpserver/data
+
+ENTRYPOINT ["/opt/jumpserver/entrypoint.sh"]
+
+EXPOSE 8080
+
+STOPSIGNAL SIGQUIT
+
+CMD ["start", "all"]
