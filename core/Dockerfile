@@ -34,7 +34,7 @@ RUN set -e \
     && sed -i 's@# xmlsec =@xmlsec =@g' /opt/jumpserver/pyproject.toml \
     && rm -f /opt/*.tar.gz
 
-COPY core/entrypoint.sh /opt/jumpserver/entrypoint.sh
+COPY entrypoint.sh /opt/jumpserver/entrypoint.sh
 
 FROM cr.loongnix.cn/library/python:3.11-slim-buster AS stage-2
 ARG TARGETARCH
