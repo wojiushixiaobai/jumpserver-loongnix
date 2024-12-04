@@ -40,8 +40,6 @@ RUN set -e \
     && chown -R root:root /opt/chen \
     && rm -f /opt/*.tar.gz
 
-COPY entrypoint.sh /opt/chen/entrypoint.sh
-
 FROM cr.loongnix.cn/library/openjdk:17-slim-buster
 ENV LANG=en_US.UTF-8
 
@@ -68,7 +66,7 @@ ENV VERSION=${VERSION}
 
 VOLUME /opt/chen/data
 
-ENTRYPOINT ["/opt/chen/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 EXPOSE 8082
 

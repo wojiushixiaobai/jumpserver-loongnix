@@ -34,8 +34,6 @@ RUN set -e \
     && sed -i 's@# xmlsec =@xmlsec =@g' /opt/jumpserver/pyproject.toml \
     && rm -f /opt/*.tar.gz
 
-COPY entrypoint.sh /opt/jumpserver/entrypoint.sh
-
 FROM cr.loongnix.cn/library/python:3.11-slim-buster AS stage-2
 ARG TARGETARCH
 
@@ -147,7 +145,7 @@ ENV VERSION=${VERSION}
 
 VOLUME /opt/jumpserver/data
 
-ENTRYPOINT ["/opt/jumpserver/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 EXPOSE 8080
 

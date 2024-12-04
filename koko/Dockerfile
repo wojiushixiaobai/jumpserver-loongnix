@@ -51,7 +51,6 @@ RUN set -e \
     && mkdir -p /opt/koko \
     && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/koko-${VERSION}.tar.gz \
     && tar -xf /opt/koko-${VERSION}.tar.gz -C /opt/koko --strip-components=1 \
-    && chown -R root:root /opt/koko \
     && rm -f /opt/*.tar.gz
 
 RUN --mount=type=cache,target=/go/pkg/mod \
@@ -59,6 +58,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     && cd /opt/koko \
     && make linux-${TARGETARCH} BUILDDIR=dist VERSION=${VERSION} \
     && mv dist/*.tar.gz /opt \
+    && mv entrypoint.sh /opt \
     && rm -rf /opt/koko
 
 WORKDIR /opt/koko
@@ -68,11 +68,10 @@ RUN set -e \
     && chown -R root:root /opt/koko \
     && mv /opt/koko/kubectl /usr/local/bin/ \
     && mv /opt/koko/helm /usr/local/bin/ \
-    && chmod 755 /usr/local/bin/helm /usr/local/bin/kubectl /opt/koko/init-kubectl.sh \
-    && chown root:root /usr/local/bin/helm /usr/local/bin/kubectl \
+    && mv /opt/entrypoint.sh /opt/koko/ \
+    && chmod 755 /usr/local/bin/helm /usr/local/bin/kubectl /opt/koko/*.sh \
+    && chown -R root:root /opt/koko \
     && rm -f /opt/*.tar.gz
-
-COPY entrypoint.sh /opt/koko/entrypoint.sh
 
 FROM cr.loongnix.cn/library/debian:buster-slim
 ENV LANG=en_US.UTF-8
@@ -102,10 +101,10 @@ ENV VERSION=${VERSION}
 
 VOLUME /opt/koko/data
 
-ENTRYPOINT ["/opt/koko/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 EXPOSE 2222 5000
 
 STOPSIGNAL SIGQUIT
 
-CMD [ "wisp" ]
+CMD [ "./koko" ]
