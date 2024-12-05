@@ -44,7 +44,10 @@ ARG BUILD_DEPENDENCIES="              \
 
 ARG DEPENDENCIES="                    \
         freetds-dev                   \
+        freerdp2-dev                  \
+        libaio-dev                    \
         libffi-dev                    \
+        libfreetype6-dev              \
         libjpeg-dev                   \
         libkrb5-dev                   \
         libldap2-dev                  \
@@ -54,8 +57,7 @@ ARG DEPENDENCIES="                    \
         libxml2-dev                   \
         libxmlsec1-dev                \
         libxmlsec1-openssl            \
-        freerdp2-dev                  \
-        libaio-dev"
+        libz-dev"
 
 ARG TOOLS="                           \
         ca-certificates               \
