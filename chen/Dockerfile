@@ -37,6 +37,8 @@ RUN set -e \
     && mkdir -p /opt/chen \
     && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/chen-${VERSION}.tar.gz \
     && tar -xf /opt/chen-${VERSION}.tar.gz -C /opt/chen --strip-components=1 \
+    && wget --quiet -O /opt/chen/entrypoint.sh https://github.com/jumpserver/chen/raw/refs/heads/master/entrypoint.sh \
+    && chmod 755 /opt/chen/*.sh \
     && chown -R root:root /opt/chen \
     && rm -f /opt/*.tar.gz
 
