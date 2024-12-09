@@ -1,4 +1,5 @@
-FROM cr.loongnix.cn/library/golang:1.23-buster AS stage-1
+FROM jumpserver/guacd:1.5.5-bookworm AS stage-1
+FROM cr.loongnix.cn/library/golang:1.23-buster AS stage-2
 ARG TARGETARCH
 
 WORKDIR /opt
@@ -45,14 +46,17 @@ RUN set -e \
     && chown -R root:root /opt/lion \
     && rm -f /opt/*.tar.gz
 
-FROM cr.loongnix.cn/guacamole/guacd:1.5.5-buster
+FROM cr.loongnix.cn/library/debian:buster-slim
 ENV LANG=en_US.UTF-8
 
 ARG DEPENDENCIES="                    \
         ca-certificates               \
         supervisor"
 
-USER root
+ARG PREFIX_DIR=/opt/guacamole
+ENV LD_LIBRARY_PATH=${PREFIX_DIR}/lib
+
+COPY --from=stage-1 ${PREFIX_DIR} ${PREFIX_DIR} 
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -61,11 +65,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' >/etc/apt/apt.conf.d/keep-cache \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && apt-get update \
-    && apt-get install -y --no-install-recommends ${DEPENDENCIES}
+    && apt-get install -y --no-install-recommends ${DEPENDENCIES} \
+    && apt-get install -y --no-install-recommends $(cat "${PREFIX_DIR}"/DEPENDENCIES)
 
-COPY --from=stage-1 /opt/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY --from=stage-1 /usr/local/bin /usr/local/bin
-COPY --from=stage-1 /opt/lion /opt/lion
+COPY --from=stage-2 /opt/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY --from=stage-2 /usr/local/bin /usr/local/bin
+COPY --from=stage-2 /opt/lion /opt/lion
 
 WORKDIR /opt/lion
 
