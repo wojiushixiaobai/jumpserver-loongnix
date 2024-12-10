@@ -31,7 +31,6 @@ RUN set -e \
     && tar -xf /opt/core-${VERSION}.tar.gz -C /opt/jumpserver --strip-components=1 \
     && chown -R root:root /opt/jumpserver \
     && echo > /opt/jumpserver/config.yml \
-    && sed -i 's@# xmlsec =@xmlsec =@g' /opt/jumpserver/pyproject.toml \
     && rm -f /opt/*.tar.gz
 
 FROM cr.loongnix.cn/library/python:3.11-slim-buster AS stage-2
@@ -98,11 +97,12 @@ WORKDIR /opt/jumpserver
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=stage-1,source=/opt/jumpserver/pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,from=stage-1,source=/opt/jumpserver/poetry.lock,target=poetry.lock \
     set -e \
     && pip install poetry cryptography==${CRYPTOGRAPHY_VERSION} \
     && python3 -m venv /opt/py3 \
     && . /opt/py3/bin/activate \
-    && poetry install --with sources
+    && poetry install --only main
 
 FROM cr.loongnix.cn/library/python:3.11-slim-buster
 ENV LANG=en_US.UTF-8 \
