@@ -49,7 +49,7 @@ ARG VERSION
 
 RUN set -e \
     && mkdir -p /opt/koko \
-    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-release/releases/download/${VERSION}/koko-${VERSION}.tar.gz \
+    && wget --quiet https://github.com/wojiushixiaobai/jumpserver-unofficial-builds/releases/download/${VERSION}/koko-${VERSION}.tar.gz \
     && tar -xf /opt/koko-${VERSION}.tar.gz -C /opt/koko --strip-components=1 \
     && rm -f /opt/*.tar.gz
 
