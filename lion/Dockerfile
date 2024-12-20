@@ -1,4 +1,4 @@
-FROM jumpserver/guacd:1.5.5-bookworm AS stage-1
+FROM cr.loongnix.cn/guacamole/guacd:1.5.5-buster AS stage-1
 FROM cr.loongnix.cn/library/golang:1.23-buster AS stage-2
 ARG TARGETARCH
 
